@@ -1,0 +1,29 @@
+machine:
+  services:
+    - docker
+
+dependencies:
+  override:
+    # set region so we can use the aws command-line tool to log into ecr
+    - aws configure set default.region us-west-2
+    - eval $(aws ecr get-login)
+
+    # pull image from ecr to cache docker layers for quicker rebuilds
+    - docker pull example.ecr.us-west-2.amazonaws.com/example:latest
+
+    # build new image
+    - bin/build.sh
+
+test:
+  override:
+    # put your test command(s) here
+    - ...
+
+deployment:
+  production:
+    # only apply this deployment on the master branch
+    branch: master
+
+    commands:
+      # push image to ecr
+      - bin/push.sh
